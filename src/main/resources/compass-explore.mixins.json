@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "me.duncanruns.compassexplore.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "ChunkGeneratorMixin",
+    "CompassItemMixin",
+    "ServerWorldMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+	}
+}

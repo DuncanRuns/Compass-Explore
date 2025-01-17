@@ -1,0 +1,3 @@
+accessWidener	v1	named
+accessible method net/minecraft/world/gen/chunk/ChunkGenerator locateRandomSpreadStructure (Ljava/util/Set;Lnet/minecraft/world/WorldView;Lnet/minecraft/world/gen/StructureAccessor;IIIZJLnet/minecraft/world/gen/chunk/placement/RandomSpreadStructurePlacement;)Lcom/mojang/datafixers/util/Pair;
+accessible method net/minecraft/registry/tag/StructureTags of (Ljava/lang/String;)Lnet/minecraft/registry/tag/TagKey;
