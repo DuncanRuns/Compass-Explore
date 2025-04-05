@@ -41,7 +41,7 @@ public abstract class CompassItemMixin extends Item {
         if (!stack.contains(DataComponentTypes.CUSTOM_DATA)) return super.use(world, user, hand);
 
         NbtCompound itemNbt = stack.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
-        String exploreType = itemNbt.getString("ExploreType");
+        String exploreType = itemNbt.getString("ExploreType", "");
         if (exploreType.isEmpty()) return super.use(world, user, hand);
 
         if (exploreType.equals("cities")) {
@@ -55,7 +55,7 @@ public abstract class CompassItemMixin extends Item {
                 user.sendMessage(Text.literal("Failed to find an End City!").styled(style -> style.withColor(Formatting.RED)), false);
                 return super.use(world, user, hand);
             } else {
-                user.sendMessage(Text.literal(String.format("Found End City at [%d, %d]", pos.getX(), pos.getZ())).styled(style -> style.withColor(Formatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, String.format("%d %d %d", pos.getX(), 64, pos.getZ()))).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.translatable("chat.copy.click")))), false);
+                user.sendMessage(Text.literal(String.format("Found End City at [%d, %d]", pos.getX(), pos.getZ())).styled(style -> style.withColor(Formatting.GREEN).withClickEvent(new ClickEvent.CopyToClipboard(String.format("%d %d %d", pos.getX(), 64, pos.getZ()))).withHoverEvent(new HoverEvent.ShowText(Text.translatable("chat.copy.click")))), false);
             }
             stack.set(DataComponentTypes.LODESTONE_TRACKER, new LodestoneTrackerComponent(Optional.of(GlobalPos.create(World.END, pos)), false));
         } else if (exploreType.equals("treasures")) {
@@ -69,7 +69,7 @@ public abstract class CompassItemMixin extends Item {
                 user.sendMessage(Text.literal("Failed to find a Treasure Bastion!").styled(style -> style.withColor(Formatting.RED)), false);
                 return super.use(world, user, hand);
             } else {
-                user.sendMessage(Text.literal(String.format("Found Treasure Bastion at [%d, %d]", pos.getX(), pos.getZ())).styled(style -> style.withColor(Formatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, String.format("%d %d %d", pos.getX(), 64, pos.getZ()))).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.translatable("chat.copy.click")))), false);
+                user.sendMessage(Text.literal(String.format("Found Treasure Bastion at [%d, %d]", pos.getX(), pos.getZ())).styled(style -> style.withColor(Formatting.GREEN).withClickEvent(new ClickEvent.CopyToClipboard(String.format("%d %d %d", pos.getX(), 64, pos.getZ()))).withHoverEvent(new HoverEvent.ShowText(Text.translatable("chat.copy.click")))), false);
             }
             stack.set(DataComponentTypes.LODESTONE_TRACKER, new LodestoneTrackerComponent(Optional.of(GlobalPos.create(World.NETHER, pos)), false));
         }
