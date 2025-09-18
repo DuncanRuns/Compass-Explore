@@ -126,8 +126,8 @@ public class CompassExplore implements ModInitializer {
 
             // For all players in the end
             // THE_END
-            players.stream().filter(player -> player.getWorld().getRegistryKey() == World.END).forEach(player -> {
-                StructureAccessor structureAccessor = ((ServerWorld) player.getWorld()).getStructureAccessor();
+            players.stream().filter(player -> player.getEntityWorld().getRegistryKey() == World.END).forEach(player -> {
+                StructureAccessor structureAccessor = ((ServerWorld) player.getEntityWorld()).getStructureAccessor();
                 StructureStart ss = structureAccessor.getStructureContaining(player.getBlockPos(), END_CITY);
                 if (ss == StructureStart.DEFAULT) {
                     return;
@@ -140,8 +140,8 @@ public class CompassExplore implements ModInitializer {
             });
 
             // For all players in the nether
-            players.stream().filter(player -> player.getWorld().getRegistryKey() == World.NETHER).forEach(player -> {
-                StructureAccessor structureAccessor = ((ServerWorld) player.getWorld()).getStructureAccessor();
+            players.stream().filter(player -> player.getEntityWorld().getRegistryKey() == World.NETHER).forEach(player -> {
+                StructureAccessor structureAccessor = ((ServerWorld) player.getEntityWorld()).getStructureAccessor();
                 StructureStart ss = structureAccessor.getStructureContaining(player.getBlockPos(), BASTION_REMNANT);
                 if (ss == StructureStart.DEFAULT) {
                     return;

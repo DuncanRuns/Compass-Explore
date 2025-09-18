@@ -33,7 +33,7 @@ public abstract class CompassItemMixin extends Item {
 
     @Override
     public ActionResult use(World world, PlayerEntity user, Hand hand) {
-        if (world.isClient) {
+        if (world.isClient()) {
             return super.use(world, user, hand);
         }
 
