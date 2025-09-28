@@ -16,7 +16,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 
 public class ExploreCommand {
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess access, CommandManager.RegistrationEnvironment environment) {
+    public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(CommandManager.literal("explore").requires(ServerCommandSource::isExecutedByPlayer).then(
                 CommandManager.literal("treasures").executes(context -> execute(context, "treasures"))
         ).then(
@@ -26,6 +26,7 @@ public class ExploreCommand {
 
     private static int execute(CommandContext<ServerCommandSource> context, String type) {
         ServerPlayerEntity player = context.getSource().getPlayer();
+        assert player != null;
         ItemStack stack = player.getStackInHand(Hand.MAIN_HAND);
         if (stack == null || stack.isEmpty() || !stack.getItem().equals(Items.COMPASS)) {
             context.getSource().sendError(Text.literal("You are not holding a compass!"));

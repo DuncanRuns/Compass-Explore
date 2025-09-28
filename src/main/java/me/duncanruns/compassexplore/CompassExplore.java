@@ -8,7 +8,6 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructureStart;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -27,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 
 public class CompassExplore implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("compass-explore");
@@ -92,13 +92,13 @@ public class CompassExplore implements ModInitializer {
         try {
             saveExploredTxt(path);
         } catch (IOException e) {
-            LOGGER.error("Failed to save explored.txt: " + e);
+            LOGGER.error("Failed to save explored.txt: {}", String.valueOf(e));
         }
     }
 
     @Override
     public void onInitialize() {
-        CommandRegistrationCallback.EVENT.register(ExploreCommand::register);
+        CommandRegistrationCallback.EVENT.register((commandDispatcher, commandRegistryAccess, registrationEnvironment) -> ExploreCommand.register(commandDispatcher));
 
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             try {
@@ -108,9 +108,7 @@ public class CompassExplore implements ModInitializer {
             }
         });
 
-        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
-            trySaveExploredTxt(getWorldExploredTxt(server));
-        });
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> trySaveExploredTxt(getWorldExploredTxt(server)));
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             structCheckTick--;
@@ -119,15 +117,15 @@ public class CompassExplore implements ModInitializer {
             }
             structCheckTick += 20;
 
-            long seed = server.getWorld(World.OVERWORLD).getSeed();
+            long seed = Objects.requireNonNull(server.getWorld(World.OVERWORLD)).getSeed();
 
             // Get non-spectator players
             List<ServerPlayerEntity> players = server.getPlayerManager().getPlayerList().stream().filter(serverPlayerEntity -> !serverPlayerEntity.isSpectator()).toList();
 
             // For all players in the end
             // THE_END
-            players.stream().filter(player -> player.getEntityWorld().getRegistryKey() == World.END).forEach(player -> {
-                StructureAccessor structureAccessor = ((ServerWorld) player.getEntityWorld()).getStructureAccessor();
+            players.stream().filter(player -> player.getWorld().getRegistryKey() == World.END).forEach(player -> {
+                StructureAccessor structureAccessor = player.getWorld().getStructureAccessor();
                 StructureStart ss = structureAccessor.getStructureContaining(player.getBlockPos(), END_CITY);
                 if (ss == StructureStart.DEFAULT) {
                     return;
@@ -140,8 +138,8 @@ public class CompassExplore implements ModInitializer {
             });
 
             // For all players in the nether
-            players.stream().filter(player -> player.getEntityWorld().getRegistryKey() == World.NETHER).forEach(player -> {
-                StructureAccessor structureAccessor = ((ServerWorld) player.getEntityWorld()).getStructureAccessor();
+            players.stream().filter(player -> player.getWorld().getRegistryKey() == World.NETHER).forEach(player -> {
+                StructureAccessor structureAccessor = player.getWorld().getStructureAccessor();
                 StructureStart ss = structureAccessor.getStructureContaining(player.getBlockPos(), BASTION_REMNANT);
                 if (ss == StructureStart.DEFAULT) {
                     return;

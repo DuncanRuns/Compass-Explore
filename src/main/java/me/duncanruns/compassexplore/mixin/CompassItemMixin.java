@@ -22,6 +22,7 @@ import net.minecraft.util.math.GlobalPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Mixin(CompassItem.class)
@@ -40,38 +41,42 @@ public abstract class CompassItemMixin extends Item {
         ItemStack stack = user.getStackInHand(hand);
         if (!stack.contains(DataComponentTypes.CUSTOM_DATA)) return super.use(world, user, hand);
 
-        NbtCompound itemNbt = stack.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
+        NbtCompound itemNbt = Objects.requireNonNull(stack.get(DataComponentTypes.CUSTOM_DATA)).copyNbt();
         String exploreType = itemNbt.getString("ExploreType", "");
-        if (exploreType.isEmpty()) return super.use(world, user, hand);
+        switch (exploreType) {
+            case "" -> {
+                return super.use(world, user, hand);
+            }
+            case "cities" -> {
+                if (world.getRegistryKey() != World.END) {
+                    return super.use(world, user, hand);
+                }
 
-        if (exploreType.equals("cities")) {
-            if (world.getRegistryKey() != World.END) {
-                return super.use(world, user, hand);
+                BlockPos pos = ((ServerWorldInt) world).compassExplore$locateNewStructure(CompassExplore.END_CITY, user.getBlockPos(), 1000, false, CompassExplore.SearchType.CITIES);
+                user.getItemCooldownManager().set(stack, 200);
+                if (pos == null) {
+                    user.sendMessage(Text.literal("Failed to find an End City!").styled(style -> style.withColor(Formatting.RED)), false);
+                    return super.use(world, user, hand);
+                } else {
+                    user.sendMessage(Text.literal(String.format("Found End City at [%d, %d]", pos.getX(), pos.getZ())).styled(style -> style.withColor(Formatting.GREEN).withClickEvent(new ClickEvent.CopyToClipboard(String.format("%d %d %d", pos.getX(), 64, pos.getZ()))).withHoverEvent(new HoverEvent.ShowText(Text.translatable("chat.copy.click")))), false);
+                }
+                stack.set(DataComponentTypes.LODESTONE_TRACKER, new LodestoneTrackerComponent(Optional.of(GlobalPos.create(World.END, pos)), false));
             }
+            case "treasures" -> {
+                if (world.getRegistryKey() != World.NETHER) {
+                    return super.use(world, user, hand);
+                }
 
-            BlockPos pos = ((ServerWorldInt) world).compassExplore$locateNewStructure(CompassExplore.END_CITY, user.getBlockPos(), 1000, false, CompassExplore.SearchType.CITIES);
-            user.getItemCooldownManager().set(stack, 200);
-            if (pos == null) {
-                user.sendMessage(Text.literal("Failed to find an End City!").styled(style -> style.withColor(Formatting.RED)), false);
-                return super.use(world, user, hand);
-            } else {
-                user.sendMessage(Text.literal(String.format("Found End City at [%d, %d]", pos.getX(), pos.getZ())).styled(style -> style.withColor(Formatting.GREEN).withClickEvent(new ClickEvent.CopyToClipboard(String.format("%d %d %d", pos.getX(), 64, pos.getZ()))).withHoverEvent(new HoverEvent.ShowText(Text.translatable("chat.copy.click")))), false);
+                BlockPos pos = ((ServerWorldInt) world).compassExplore$locateNewStructure(CompassExplore.BASTION_REMNANT, user.getBlockPos(), 1000, false, CompassExplore.SearchType.TREASURES);
+                user.getItemCooldownManager().set(stack, 200);
+                if (pos == null) {
+                    user.sendMessage(Text.literal("Failed to find a Treasure Bastion!").styled(style -> style.withColor(Formatting.RED)), false);
+                    return super.use(world, user, hand);
+                } else {
+                    user.sendMessage(Text.literal(String.format("Found Treasure Bastion at [%d, %d]", pos.getX(), pos.getZ())).styled(style -> style.withColor(Formatting.GREEN).withClickEvent(new ClickEvent.CopyToClipboard(String.format("%d %d %d", pos.getX(), 64, pos.getZ()))).withHoverEvent(new HoverEvent.ShowText(Text.translatable("chat.copy.click")))), false);
+                }
+                stack.set(DataComponentTypes.LODESTONE_TRACKER, new LodestoneTrackerComponent(Optional.of(GlobalPos.create(World.NETHER, pos)), false));
             }
-            stack.set(DataComponentTypes.LODESTONE_TRACKER, new LodestoneTrackerComponent(Optional.of(GlobalPos.create(World.END, pos)), false));
-        } else if (exploreType.equals("treasures")) {
-            if (world.getRegistryKey() != World.NETHER) {
-                return super.use(world, user, hand);
-            }
-
-            BlockPos pos = ((ServerWorldInt) world).compassExplore$locateNewStructure(CompassExplore.BASTION_REMNANT, user.getBlockPos(), 1000, false, CompassExplore.SearchType.TREASURES);
-            user.getItemCooldownManager().set(stack, 200);
-            if (pos == null) {
-                user.sendMessage(Text.literal("Failed to find a Treasure Bastion!").styled(style -> style.withColor(Formatting.RED)), false);
-                return super.use(world, user, hand);
-            } else {
-                user.sendMessage(Text.literal(String.format("Found Treasure Bastion at [%d, %d]", pos.getX(), pos.getZ())).styled(style -> style.withColor(Formatting.GREEN).withClickEvent(new ClickEvent.CopyToClipboard(String.format("%d %d %d", pos.getX(), 64, pos.getZ()))).withHoverEvent(new HoverEvent.ShowText(Text.translatable("chat.copy.click")))), false);
-            }
-            stack.set(DataComponentTypes.LODESTONE_TRACKER, new LodestoneTrackerComponent(Optional.of(GlobalPos.create(World.NETHER, pos)), false));
         }
 
         world.playSound(null, user.getBlockPos(), SoundEvents.ITEM_LODESTONE_COMPASS_LOCK, SoundCategory.PLAYERS, 1.0f, 1.0f);
